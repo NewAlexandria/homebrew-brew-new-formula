@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  tap-commands:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up tap from workspace
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/newalexandria"
+          ln -sf "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/newalexandria/homebrew-brew-new-formula"
+
+      - name: Run brew new-formulae
+        run: brew new-formulae 0 7
+
+      - name: Run brew rebuild-index
+        run: brew rebuild-index
+
+      - name: Run brew first-installs
+        run: brew first-installs 0 30
+
+  formula-install:
+    runs-on: macos-latest
+    # May fail until formula sha256 is updated after first push
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tap and install formula
+        run: |
+          brew tap newalexandria/brew-new-formula
+          brew install newalexandria/brew-new-formula/brew-new-formulae
+
+      - name: Run brew new-formulae (from formula)
+        run: brew new-formulae 0 7
+
+      - name: Run brew rebuild-index (from formula)
+        run: brew rebuild-index
+
+      - name: Run brew first-installs (from formula)
+        run: brew first-installs 0 30
+
+      - name: Test formula
+        run: brew test newalexandria/brew-new-formula/brew-new-formulae

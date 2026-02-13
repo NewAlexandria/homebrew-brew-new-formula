@@ -1,0 +1,11 @@
+#!/bin/bash
+#: Usage: brew first-installs [options] <days_ago> <days_ago>
+#: Find packages first installed within a date range.
+#: Example: brew first-installs 0 30  (from 30 days ago through today)
+#:   -h, --help     Show this message
+#:   --json         Output raw JSON array
+#:   --info         Show brew info for each match
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LIB_DIR="$SCRIPT_DIR/lib"
+exec python3 "$LIB_DIR/brew_first_installs.py" "$@"

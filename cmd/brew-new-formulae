@@ -1,0 +1,13 @@
+#!/bin/bash
+#: Usage: brew new-formulae [options] <days_ago> <days_ago>
+#: List formulae and casks added to Homebrew taps within a date range.
+#: Example: brew new-formulae 0 30  (last 30 days)
+#: Run 'brew update' first for accuracy.
+#:   -h, --help     Show this message
+#:   --json         Output JSON array
+#:   --desc         Fetch brew info description (slower)
+#:   --brew-style   Display like 'brew update' with description and URL
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LIB_DIR="$SCRIPT_DIR/lib"
+exec python3 "$LIB_DIR/brew_new_formulae.py" "$@"

@@ -1,0 +1,11 @@
+#!/bin/bash
+#: Usage: brew rebuild-index [options]
+#: Rebuild the Homebrew installs index (installs_index.json).
+#: Used by brew first-installs when the index is missing or stale.
+#:   -h, --help     Show this message
+#:   --enrich       Enrich with history from GitHub (slower)
+#:   --available    Include available (non-installed) packages from last year
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LIB_DIR="$SCRIPT_DIR/lib"
+exec python3 "$LIB_DIR/brew_index.py" "$@"
