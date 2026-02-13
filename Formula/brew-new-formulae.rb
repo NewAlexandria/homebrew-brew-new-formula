@@ -28,7 +28,7 @@ class BrewNewFormulae < Formula
       exec "#{python}" "#{opt_libexec}/brew_index.py" "$@"
     EOS
 
-    chmod 0755, bin/"brew-new-formulae", bin/"brew-first-installs", bin/"brew-rebuild-index"
+    [bin/"brew-new-formulae", bin/"brew-first-installs", bin/"brew-rebuild-index"].each { |f| chmod 0755, f }
   end
 
   test do
