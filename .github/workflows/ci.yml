@@ -28,8 +28,6 @@ jobs:
 
   formula-install:
     runs-on: macos-latest
-    # May fail until formula sha256 is updated after first push
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
