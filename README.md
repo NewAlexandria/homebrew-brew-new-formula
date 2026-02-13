@@ -49,6 +49,12 @@ brew rebuild-index
 - Python 3.12+
 - Git (for tap scanning)
 
+## Website
+
+News and updates: [newalexandria.github.io/homebrew-brew-new-formula](https://newalexandria.github.io/homebrew-brew-new-formula/) · [RSS feed](https://newalexandria.github.io/homebrew-brew-new-formula/feed.xml)
+
+Support New Alexandria: [Patreon](https://www.patreon.com/newalexandria) · [GitHub Sponsors](https://github.com/sponsors/NewAlexandria)
+
 ## License
 
 MIT
