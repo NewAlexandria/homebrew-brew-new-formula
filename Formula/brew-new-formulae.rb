@@ -4,9 +4,9 @@
 class BrewNewFormulae < Formula
   desc "List formulae and casks added to Homebrew taps within a date range"
   homepage "https://github.com/newalexandria/homebrew-brew-new-formula"
-  url "https://github.com/newalexandria/homebrew-brew-new-formula/archive/refs/heads/main.tar.gz"
+  url "https://github.com/newalexandria/homebrew-brew-new-formula/archive/refs/tags/v1.0.0.tar.gz"
   version "1.0.0"
-  sha256 "46bcec01dcf776dbb2e4e5e66490974f552a5fb996792bca1db36f449e0d4487"
+  sha256 "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"
   license "MIT"
 
   depends_on "python@3.12"
