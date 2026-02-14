@@ -409,18 +409,27 @@ def main():
                 pass
 
 
-    # 7. Output — try brew repo first; if not writable (e.g. CI), use user fallback
-    out_json = os.path.join(brew_repo, "installs_index.json")
+    # 7. Output — env override (for tests), then brew repo, then user fallback if not writable
     final_records.sort(key=lambda x: (x['formula'], x['version'], x['install_epoch']))
+
+    index_dir_env = os.environ.get("BREW_NEW_FORMULAE_INDEX_DIR")
+    if index_dir_env:
+        out_json = str(Path(index_dir_env) / "installs_index.json")
+    else:
+        out_json = os.path.join(brew_repo, "installs_index.json")
 
     fallback_dir = Path(os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))) / "brew-new-formulae"
     fallback_json = fallback_dir / "installs_index.json"
 
     try:
+        Path(out_json).parent.mkdir(parents=True, exist_ok=True)
         with open(out_json, 'w') as f:
             json.dump(final_records, f, indent=2, sort_keys=True)
         print(f"Index created: {out_json}")
     except (OSError, PermissionError) as e:
+        if index_dir_env:
+            print(f"Error writing output to {out_json}: {e}", file=sys.stderr)
+            sys.exit(1)
         try:
             fallback_dir.mkdir(parents=True, exist_ok=True)
             with open(fallback_json, 'w') as f:

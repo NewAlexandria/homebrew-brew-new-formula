@@ -36,6 +36,8 @@ class BrewNewFormulae < Formula
     system bin/"brew-new-formulae", "--help"
     # Should run without error (may produce empty output)
     system bin/"brew-new-formulae", "0", "7"
+    # Use a writable dir for the index (Cellar/opt/homebrew is read-only in CI)
+    ENV["BREW_NEW_FORMULAE_INDEX_DIR"] = Dir.mktmpdir
     system bin/"brew-rebuild-index"
   end
 end

@@ -74,6 +74,13 @@ def _index_fallback_path() -> Path:
 
 
 def load_index(brew_repo: str) -> list:
+    # BREW_NEW_FORMULAE_INDEX_DIR (used by Formula test and CI) takes precedence
+    index_dir_env = os.environ.get("BREW_NEW_FORMULAE_INDEX_DIR")
+    if index_dir_env:
+        env_path = Path(index_dir_env) / "installs_index.json"
+        if env_path.is_file():
+            with open(env_path, "r", encoding="utf-8") as f:
+                return json.load(f)
     primary = Path(brew_repo) / "installs_index.json"
     fallback = _index_fallback_path()
     for index_path in (primary, fallback):
