@@ -43,12 +43,14 @@ def rebuild_index(brew_repo: str) -> bool:
         print(f"Index builder not found at {index_script}", file=sys.stderr)
         return False
     try:
+        # Inherit env so BREW_NEW_FORMULAE_INDEX_DIR is passed when set (e.g. Formula test)
         result = subprocess.run(
             [sys.executable, str(index_script)],
             capture_output=True,
             text=True,
             timeout=300,
             cwd=script_dir,
+            env=os.environ.copy(),
         )
         if result.returncode != 0:
             if result.stderr:
