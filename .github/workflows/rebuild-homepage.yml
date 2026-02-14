@@ -1,0 +1,47 @@
+name: Rebuild microsite
+
+on:
+  schedule:
+    # Daily at 12:00 UTC
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - "docs/page.html.template"
+      - "scripts/build_homepage.py"
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tap and install formula
+        run: |
+          brew tap newalexandria/brew-new-formula
+          brew install newalexandria/brew-new-formula/brew-new-formulae
+
+      - name: Update Homebrew and taps
+        run: brew update
+
+      - name: Fetch new formulae (last 28 days, JSON)
+        run: |
+          brew new-formulae 0 28 --json --desc > new-formulae-28.json
+
+      - name: Build microsite pages
+        run: |
+          python3 scripts/build_homepage.py new-formulae-28.json
+
+      - name: Commit and push if changed
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/28-days.html docs/yesterday.html
+          git diff --staged --quiet || (git commit -m "chore(docs): rebuild microsite pages (7d / 28d / yesterday)" && git push)
