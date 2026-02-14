@@ -5,33 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New formulae (last 7 days) – brew-new-formulae – New Alexandria</title>
   <link rel="alternate" type="application/rss+xml" title="brew-new-formulae News" href="feed.xml">
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
-    h1 { font-size: 1.5rem; }
-    a { color: #0969da; }
-    .nav { margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #eee; font-size: 0.95rem; }
-    .nav a { margin-right: 1rem; }
-    .nav a[aria-current="page"] { font-weight: 600; }
-    .formula-item { margin: 1rem 0; padding-bottom: 0.75rem; border-bottom: 1px solid #eee; }
-    .formula-name { font-weight: 600; }
-    .formula-meta { color: #666; font-size: 0.9rem; margin-top: 0.25rem; }
-    .news-item { margin: 1.5rem 0; padding-bottom: 1rem; border-bottom: 1px solid #eee; }
-    .news-date { color: #666; font-size: 0.9rem; }
-    .donate { margin-top: 2rem; padding: 1rem; background: #f6f8fa; border-radius: 6px; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>brew-new-formulae</h1>
-  <p>Homebrew external commands to discover new formulae and track first installs.</p>
+  <div class="container">
+    <header>
+      <h1>brew-new-formulae</h1>
+      <p class="subtitle">Homebrew external commands to discover new formulae and track first installs.</p>
+    </header>
 
-  <nav class="nav" aria-label="New formulae by period">
-    <a href="yesterday.html">Yesterday</a>
-    <a href="index.html" aria-current="page">7 days</a>
-    <a href="28-days.html">28 days</a>
-  </nav>
+    <nav class="nav" aria-label="New formulae by period">
+      <a href="yesterday.html">Yesterday</a>
+      <a href="index.html" aria-current="page">7 days</a>
+      <a href="28-days.html">28 days</a>
+    </nav>
 
-  <h2>New formulae (last 7 days)</h2>
-  <div class="formula-item"><a href="https://raphgl.github.io/Tuckr/" class="formula-name" rel="noopener noreferrer">tuckr</a> <a href="https://github.com/Homebrew/homebrew-core" class="formula-tap" rel="noopener noreferrer">[Formula]</a><div class="formula-meta">2026-02-12 · homebrew-core – Super powered replacement for GNU Stow</div></div>
+    <h2>New formulae (last 7 days)</h2>
+    <div class="formula-list">
+      <div class="formula-item"><a href="https://raphgl.github.io/Tuckr/" class="formula-name" rel="noopener noreferrer">tuckr</a> <a href="https://github.com/Homebrew/homebrew-core" class="formula-tap" rel="noopener noreferrer">[Formula]</a><div class="formula-meta">2026-02-12 · homebrew-core – Super powered replacement for GNU Stow</div></div>
 <div class="formula-item"><a href="https://boostsecurityio.github.io/bagel/" class="formula-name" rel="noopener noreferrer">bagel</a> <a href="https://github.com/Homebrew/homebrew-core" class="formula-tap" rel="noopener noreferrer">[Formula]</a><div class="formula-meta">2026-02-12 · homebrew-core – CLI to audit posture and evaluate compromise blast radius</div></div>
 <div class="formula-item"><a href="https://www.gnu.org/software/binutils/" class="formula-name" rel="noopener noreferrer">mipsel-linux-gnu-binutils</a> <a href="https://github.com/Homebrew/homebrew-core" class="formula-tap" rel="noopener noreferrer">[Formula]</a><div class="formula-meta">2026-02-12 · homebrew-core – GNU Binutils for mipsel-linux-gnu cross development</div></div>
 <div class="formula-item"><a href="https://git.freestone.net/cramer/pcapmirror" class="formula-name" rel="noopener noreferrer">pcapmirror</a> <a href="https://github.com/Homebrew/homebrew-core" class="formula-tap" rel="noopener noreferrer">[Formula]</a><div class="formula-meta">2026-02-11 · homebrew-core – Tool for capturing network traffic on remote host using TZSP or ERSPAN</div></div>
@@ -63,26 +54,31 @@
 <div class="formula-item"><a href="https://github.com/transifex/cli" class="formula-name" rel="noopener noreferrer">transifex-cli</a> <a href="https://github.com/Homebrew/homebrew-core" class="formula-tap" rel="noopener noreferrer">[Formula]</a><div class="formula-meta">2026-02-07 · homebrew-core – Transifex command-line client</div></div>
 <div class="formula-item"><a href="https://github.com/xmannv/xkey/" class="formula-name" rel="noopener noreferrer">xkey</a> <a href="https://github.com/Homebrew/homebrew-cask" class="formula-tap" rel="noopener noreferrer">[Casks]</a><div class="formula-meta">2026-02-07 · homebrew-cask – Vietnamese input method engine</div></div>
 <div class="formula-item"><a href="https://github.com/dmtrKovalenko/odiff" class="formula-name" rel="noopener noreferrer">odiff</a> <a href="https://github.com/Homebrew/homebrew-core" class="formula-tap" rel="noopener noreferrer">[Formula]</a><div class="formula-meta">2026-02-07 · homebrew-core – Very fast SIMD-first image comparison library (with nodejs API)</div></div>
+    </div>
 
-  <h2>Install</h2>
-  <pre><code>brew tap newalexandria/brew-new-formula
+    <h2>Install</h2>
+    <pre><code>brew tap newalexandria/brew-new-formula
 brew install newalexandria/brew-new-formula/brew-new-formulae</code></pre>
 
-  <h2>News</h2>
-  <div class="news-item">
-    <span class="news-date">2026-02-13</span>
-    <p><strong>v1.0.0</strong> – Initial release. Commands: <code>brew new-formulae</code>, <code>brew first-installs</code>, <code>brew rebuild-index</code>.</p>
-  </div>
+    <h2>News</h2>
+    <div class="news-item">
+      <span class="news-date">2026-02-13</span>
+      <p><strong>v1.0.0</strong> – Initial release. Commands: <code>brew new-formulae</code>, <code>brew first-installs</code>, <code>brew rebuild-index</code>.</p>
+    </div>
 
-  <p><a href="https://github.com/NewAlexandria/homebrew-brew-new-formula">GitHub</a></p>
+    <div class="footer">
+      <p><a href="https://github.com/NewAlexandria/homebrew-brew-new-formula">View on GitHub</a></p>
 
-  <div class="donate">
-    <h3>Support New Alexandria</h3>
-    <p><a href="https://patreon.com/NewAlexandria">Patreon</a></p>
-  </div>
+      <div class="donate">
+        <h3>Support New Alexandria</h3>
+        <p>If you find this useful, consider supporting the project.</p>
+        <p><a href="https://patreon.com/NewAlexandria">Patreon</a></p>
+      </div>
 
-  <div class="sponsor-card" style="margin-top: 2rem;">
-    <iframe src="https://github.com/sponsors/NewAlexandria/card" title="Sponsor NewAlexandria" height="225" width="600" style="border: 0; max-width: 100%;"></iframe>
+      <div class="sponsor-card">
+        <iframe src="https://github.com/sponsors/NewAlexandria/card" title="Sponsor NewAlexandria" height="225" width="600" style="border: 0; max-width: 100%;"></iframe>
+      </div>
+    </div>
   </div>
 </body>
 </html>
