@@ -409,17 +409,27 @@ def main():
                 pass
 
 
-    # 7. Output
+    # 7. Output — try brew repo first; if not writable (e.g. CI), use user fallback
     out_json = os.path.join(brew_repo, "installs_index.json")
     final_records.sort(key=lambda x: (x['formula'], x['version'], x['install_epoch']))
+
+    fallback_dir = Path(os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))) / "brew-new-formulae"
+    fallback_json = fallback_dir / "installs_index.json"
 
     try:
         with open(out_json, 'w') as f:
             json.dump(final_records, f, indent=2, sort_keys=True)
         print(f"Index created: {out_json}")
-    except Exception as e:
-        print(f"Error writing output to {out_json}: {e}", file=sys.stderr)
-        sys.exit(1)
+    except (OSError, PermissionError) as e:
+        try:
+            fallback_dir.mkdir(parents=True, exist_ok=True)
+            with open(fallback_json, 'w') as f:
+                json.dump(final_records, f, indent=2, sort_keys=True)
+            print(f"Index created (fallback): {fallback_json}", file=sys.stderr)
+        except Exception as e2:
+            print(f"Error writing output to {out_json}: {e}", file=sys.stderr)
+            print(f"Fallback write also failed: {e2}", file=sys.stderr)
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()

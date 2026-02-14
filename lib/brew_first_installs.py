@@ -67,12 +67,20 @@ def iso_from_epoch(epoch: int) -> str:
     dt = datetime.fromtimestamp(epoch, tz=timezone.utc)
     return dt.isoformat()
 
+def _index_fallback_path() -> Path:
+    """User-writable fallback when brew repo is not writable (e.g. CI). Same as brew_index.py."""
+    base = os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
+    return Path(base) / "brew-new-formulae" / "installs_index.json"
+
+
 def load_index(brew_repo: str) -> list:
-    index_path = Path(brew_repo) / "installs_index.json"
-    if not index_path.is_file():
-        raise FileNotFoundError(f"Index file not found at {index_path}")
-    with open(index_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    primary = Path(brew_repo) / "installs_index.json"
+    fallback = _index_fallback_path()
+    for index_path in (primary, fallback):
+        if index_path.is_file():
+            with open(index_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    raise FileNotFoundError(f"Index file not found at {primary} or {fallback}")
 
 def main():
     parser = argparse.ArgumentParser(
