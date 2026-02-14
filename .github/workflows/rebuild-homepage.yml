@@ -32,7 +32,7 @@ jobs:
 
       - name: Fetch new formulae (last 28 days, JSON)
         run: |
-          brew new-formulae 0 28 --json --desc > new-formulae-28.json
+          brew new-formulae 0 28 --json --desc --no-ansi > new-formulae-28.json
 
       - name: Build microsite pages
         run: |

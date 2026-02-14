@@ -13,10 +13,11 @@ Run from repo root. Template: docs/page.html.template. Output: docs/.
 """
 
 import argparse
-import json
 import html
+import json
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 def parse_iso_to_utc_date(iso_str: str):
@@ -67,8 +68,22 @@ def load_and_split(json_path: Path):
     return yesterday_list, last_7_list, last_28_list
 
 
+def _safe_homepage_url(url: str) -> str | None:
+    """Return URL if it is a safe http/https URL for hyperlinking; else None."""
+    if not url or not isinstance(url, str):
+        return None
+    url = url.strip()
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme in ("http", "https") and parsed.netloc:
+            return url
+    except Exception:
+        pass
+    return None
+
+
 def render_list(records: list, empty_message: str) -> str:
-    """Render records as HTML fragment. Escape text for HTML."""
+    """Render records as HTML fragment. Hyperlink formula name when homepage present; [Formula]/[Cask] only when linked to tap source repo."""
     if not records:
         return f'<p class="formula-meta">{html.escape(empty_message)}</p>'
     parts = []
@@ -80,9 +95,21 @@ def render_list(records: list, empty_message: str) -> str:
         desc = (r.get("description") or "").strip()
         if desc:
             desc = " – " + html.escape(desc[:200])
+        homepage = _safe_homepage_url(r.get("homepage") or "")
+        if homepage:
+            href = html.escape(homepage, quote=True)
+            name_block = f'<a href="{href}" class="formula-name" rel="noopener noreferrer">{name}</a>'
+        else:
+            name_block = f'<span class="formula-name">{name}</span>'
+        tap_url = _safe_homepage_url(r.get("tap_url") or "")
+        if tap_url:
+            kind_href = html.escape(tap_url, quote=True)
+            kind_block = f' <a href="{kind_href}" class="formula-tap" rel="noopener noreferrer">[{kind}]</a>'
+        else:
+            kind_block = ""
         parts.append(
             f'<div class="formula-item">'
-            f'<span class="formula-name">{name}</span> [{kind}]'
+            f'{name_block}{kind_block}'
             f'<div class="formula-meta">{date_str} · {tap}{desc}</div>'
             f"</div>"
         )

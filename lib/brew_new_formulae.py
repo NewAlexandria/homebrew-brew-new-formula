@@ -13,7 +13,7 @@ The range is expressed as two "days ago" values (same as brew_first_installs.py)
   Order of arguments does not matter.
 
 Usage:
-    python3 brew_new_formulae.py <days_ago> <days_ago> [--json] [--desc]
+    python3 brew_new_formulae.py <days_ago> <days_ago> [--json] [--desc] [--no-ansi]
     python3 brew_new_formulae.py <days_ago> <days_ago> --brew-style   # like brew update + info
 
 Example:
@@ -42,6 +42,30 @@ def get_brew_repo() -> str:
         return os.path.expanduser("~/.homebrew")
 
 
+def get_tap_remote_url(tap_repo: Path) -> str:
+    """Get tap's origin remote URL as https (for linking to source repo). Returns '' on failure."""
+    try:
+        out = subprocess.check_output(
+            ["git", "-C", str(tap_repo), "remote", "get-url", "origin"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+        )
+        url = (out or "").strip()
+        if not url:
+            return ""
+        # Normalize git@github.com:user/repo.git -> https://github.com/user/repo
+        if url.startswith("git@"):
+            url = url.replace(":", "/", 1).replace("git@", "https://", 1)
+        if url.endswith(".git"):
+            url = url[:-4]
+        if url.startswith("https://") or url.startswith("http://"):
+            return url
+        return ""
+    except Exception:
+        return ""
+
+
 def scan_taps_for_new_formulae(
     brew_repo: str,
     since_days: int,
@@ -52,7 +76,7 @@ def scan_taps_for_new_formulae(
     if not taps_dir.is_dir():
         return []
 
-    results = []  # list of {formula, date_iso, tap, type}
+    results = []  # list of {formula, date_iso, tap, type, tap_url}
     seen = set()  # (formula, tap) to avoid duplicates across taps
 
     for tap in taps_dir.iterdir():
@@ -62,6 +86,7 @@ def scan_taps_for_new_formulae(
             if not tap_repo.is_dir() or not (tap_repo / ".git").exists():
                 continue
 
+            tap_url = get_tap_remote_url(tap_repo)
             paths_to_scan = []
             for p in ["Formula", "Casks"]:
                 if (tap_repo / p).is_dir():
@@ -103,11 +128,21 @@ def scan_taps_for_new_formulae(
                             "tap_added_time": current_date,
                             "tap": tap_name,
                             "type": kind,
+                            "tap_url": tap_url,
                         })
     return results
 
 
-def fetch_description(formula: str) -> str:
+def _brew_env(no_ansi: bool) -> dict | None:
+    """Return env dict with NO_COLOR=1 when no_ansi, so brew subprocesses omit ANSI."""
+    if not no_ansi:
+        return None
+    env = os.environ.copy()
+    env["NO_COLOR"] = "1"
+    return env
+
+
+def fetch_description(formula: str, no_ansi: bool = False) -> str:
     """Get one-line description from brew info."""
     try:
         out = subprocess.check_output(
@@ -115,6 +150,7 @@ def fetch_description(formula: str) -> str:
             text=True,
             stderr=subprocess.DEVNULL,
             timeout=5,
+            env=_brew_env(no_ansi) or os.environ,
         )
         for line in out.splitlines():
             line = line.strip()
@@ -125,7 +161,7 @@ def fetch_description(formula: str) -> str:
         return ""
 
 
-def fetch_brew_info(formula: str) -> tuple[str, str]:
+def fetch_brew_info(formula: str, no_ansi: bool = False) -> tuple[str, str]:
     """Get (desc, homepage) from brew info --json=v2. Returns ('', '') on failure."""
     try:
         out = subprocess.check_output(
@@ -133,6 +169,7 @@ def fetch_brew_info(formula: str) -> tuple[str, str]:
             text=True,
             stderr=subprocess.DEVNULL,
             timeout=10,
+            env=_brew_env(no_ansi) or os.environ,
         )
         data = json.loads(out)
         for item in data.get("formulae", []) + data.get("casks", []):
@@ -160,11 +197,19 @@ def main():
     parser.add_argument("--json", action="store_true", help="Output JSON array")
     parser.add_argument("--desc", action="store_true", help="Fetch brew info description (slower)")
     parser.add_argument(
+        "--no-ansi",
+        action="store_true",
+        help="Disable ANSI/color in output and in brew subprocesses (e.g. for CI or piping)",
+    )
+    parser.add_argument(
         "--brew-style",
         action="store_true",
         help="Display like 'brew update' New Formulae with description and URL from brew info",
     )
     args = parser.parse_args()
+
+    # When stdout is not a TTY (e.g. piping JSON), disable ANSI so output is clean
+    no_ansi = args.no_ansi or (hasattr(sys.stdout, "isatty") and not sys.stdout.isatty())
 
     older_days = max(args.days_ago_a, args.days_ago_b)
     newer_days = min(args.days_ago_a, args.days_ago_b)
@@ -178,12 +223,13 @@ def main():
 
     if args.desc or args.brew_style:
         for r in records:
-            if args.brew_style:
-                desc, homepage = fetch_brew_info(r["formula"])
+            # Use fetch_brew_info when we need homepage (brew-style or JSON+desc for web)
+            if args.brew_style or (args.json and args.desc):
+                desc, homepage = fetch_brew_info(r["formula"], no_ansi=no_ansi)
                 r["description"] = desc
                 r["homepage"] = homepage
             else:
-                r["description"] = fetch_description(r["formula"])
+                r["description"] = fetch_description(r["formula"], no_ansi=no_ansi)
 
     if args.json:
         json.dump(records, sys.stdout, indent=2)
