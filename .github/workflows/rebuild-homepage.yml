@@ -22,17 +22,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tap and install formula
-        run: |
-          brew tap newalexandria/brew-new-formula
-          brew install newalexandria/brew-new-formula/brew-new-formulae
-
       - name: Update Homebrew and taps
         run: brew update
 
       - name: Fetch new formulae (last 28 days, JSON)
         run: |
-          brew new-formulae 0 28 --json --desc --no-ansi > new-formulae-28.json
+          python3 lib/brew_new_formulae.py 0 28 --json --desc --no-ansi > new-formulae-28.json
 
       - name: Build microsite pages
         run: |
