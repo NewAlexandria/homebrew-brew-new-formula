@@ -34,7 +34,7 @@ jobs:
       - name: Tap and install formula
         run: |
           brew tap newalexandria/brew-new-formula
-          brew install newalexandria/brew-new-formula/brew-new-formulae
+          brew install --HEAD newalexandria/brew-new-formula/brew-new-formulae
 
       - name: Run brew new-formulae (from formula)
         run: brew new-formulae 0 7

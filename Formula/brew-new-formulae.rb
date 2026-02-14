@@ -7,6 +7,7 @@ class BrewNewFormulae < Formula
   url "https://github.com/newalexandria/homebrew-brew-new-formula/archive/refs/tags/v1.0.0.tar.gz"
   version "1.0.0"
   sha256 "8ee3a9b74b8e3c38b94f364a0b0e4a66f9097e4f3e2f4020d8d8918c78323847"
+  head "https://github.com/newalexandria/homebrew-brew-new-formula.git", branch: "main"
   license "MIT"
 
   depends_on "python@3.12"
