@@ -25,9 +25,84 @@ jobs:
       - name: Update Homebrew and taps
         run: brew update
 
+      # macos-latest no longer ships homebrew/core or homebrew/cask checkouts.
+      # brew update still reports new formulae from the JSON API, but the
+      # scanner only reads tap git history. Shallow-clone enough history for
+      # the 28-day window without a full core clone.
+      - name: Ensure core and cask git history
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          taps_root="$(brew --repository)/Library/Taps/homebrew"
+          mkdir -p "$taps_root"
+          since="32 days ago"
+
+          history_ok() {
+            local dest="$1"
+            local rb_count=0
+            local search=()
+            [[ -d "$dest/.git" ]] || return 1
+            [[ -n "$(git -C "$dest" rev-list --max-count=1 --before="30 days ago" HEAD)" ]] || return 1
+            [[ -d "$dest/Formula" ]] && search+=("$dest/Formula")
+            [[ -d "$dest/Casks" ]] && search+=("$dest/Casks")
+            [[ ${#search[@]} -gt 0 ]] || return 1
+            rb_count=$(find "${search[@]}" -name '*.rb' | wc -l | tr -d ' ')
+            # A partial pin checkout has a handful of files; real taps have thousands.
+            [[ "$rb_count" -ge 100 ]]
+          }
+
+          ensure_tap() {
+            local url="$1"
+            local name="$2"
+            local dest="$taps_root/$name"
+            local branch=""
+
+            git config --global --add safe.directory "$dest"
+
+            if [[ -d "$dest/.git" ]]; then
+              git -C "$dest" remote set-url origin "$url" 2>/dev/null || git -C "$dest" remote add origin "$url"
+              branch=$(git ls-remote --symref "$url" HEAD | awk '/^ref:/ {sub("refs/heads/","",$2); print $2; exit}')
+              if [[ -z "$branch" ]]; then
+                echo "error: could not resolve default branch for $url" >&2
+                exit 1
+              fi
+              if git -C "$dest" fetch --shallow-since="$since" origin "$branch"; then
+                git -C "$dest" checkout -f -B "$branch" FETCH_HEAD
+              else
+                echo "fetch failed for $name; replacing checkout" >&2
+                rm -rf "$dest"
+              fi
+            fi
+
+            if ! history_ok "$dest"; then
+              rm -rf "$dest"
+              git clone --shallow-since="$since" --single-branch \
+                --origin=origin --template= --config core.fsmonitor=false \
+                "$url" "$dest"
+              git config --global --add safe.directory "$dest"
+            fi
+
+            if ! history_ok "$dest"; then
+              echo "error: $name does not have 30 days of formula history" >&2
+              exit 1
+            fi
+            echo "$name is ready at $dest"
+          }
+
+          ensure_tap https://github.com/Homebrew/homebrew-core.git homebrew-core
+          ensure_tap https://github.com/Homebrew/homebrew-cask.git homebrew-cask
+
       - name: Fetch new formulae (last 28 days, JSON)
         run: |
+          set -euo pipefail
           python3 lib/brew_new_formulae.py 0 28 --json --desc --no-ansi > new-formulae-28.json
+          python3 -c '
+          import json, sys
+          data = json.load(open("new-formulae-28.json"))
+          if not isinstance(data, list) or not data:
+              sys.exit("Refusing to publish an empty new-formulae list")
+          print(f"Found {len(data)} formulae/casks")
+          '
 
       - name: Build microsite pages
         run: |
