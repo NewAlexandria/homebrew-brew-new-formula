@@ -10,6 +10,7 @@ on:
     paths:
       - "docs/page.html.template"
       - "scripts/build_homepage.py"
+      - "lib/brew_new_formulae.py"
       - ".github/workflows/rebuild-homepage.yml"
 
 permissions:
