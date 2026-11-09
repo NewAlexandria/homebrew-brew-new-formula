@@ -93,8 +93,14 @@ def scan_taps_for_new_formulae(
                     paths_to_scan.append((p + "/", p.rstrip("/")))
 
             for path_spec, kind in paths_to_scan:
+                # --first-parent -m follows the branch the tap is on and still
+                # shows files brought in by merge commits. Without --first-parent,
+                # a shallow clone treats boundary commits (parent objects missing)
+                # as adding the entire tree, so one cask bump looks like thousands
+                # of new casks.
                 cmd = [
                     "git", "-C", str(tap_repo), "log",
+                    "--first-parent", "-m",
                     "--diff-filter=A", "--name-only", "--format=DT:%aI",
                     f"--since={since_days} days ago",
                 ]
